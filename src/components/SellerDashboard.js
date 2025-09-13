@@ -58,10 +58,10 @@ const SellerDashboard = ({ user }) => {
         getSettings()
       ]);
 
-      setItems(sellerItems);
-      setOrders(sellerOrders);
-      setStats(sellerStats);
-      setSettings(appSettings);
+    setItems(sellerItems);
+    setOrders(sellerOrders);
+    setStats(sellerStats);
+    setSettings(appSettings);
       setShareUrl(`${window.location.origin}/seller/${userId}`);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -110,7 +110,7 @@ const SellerDashboard = ({ user }) => {
   };
 
   const generateSocialPost = (platform) => {
-    const message = `Check out my items on SchoolSeller! I have ${stats.totalItems} items available. ${shareUrl}`;
+    const message = `Check out my items on SchoolSeller! I have ${items.reduce((total, item) => total + (item.quantity || 0), 0)} items available. ${shareUrl}`;
     
     let url = '';
     switch (platform) {
@@ -146,7 +146,7 @@ const SellerDashboard = ({ user }) => {
                   <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center">
                     <TrendingUp className="h-7 w-7 text-white" />
                   </div>
-                  <div>
+            <div>
                     <h1 className="text-3xl font-bold text-gray-900">Seller Dashboard</h1>
                     <p className="text-gray-600 mt-1">Welcome back, {user.displayName || user.name}!</p>
                   </div>
@@ -163,7 +163,7 @@ const SellerDashboard = ({ user }) => {
                   <div className="bg-purple-50 rounded-lg p-4">
                     <div className="flex items-center">
                       <Package className="h-5 w-5 text-purple-600" />
-                      <span className="ml-2 text-sm font-medium text-purple-900">{items.length} items</span>
+                      <span className="ml-2 text-sm font-medium text-purple-900">{items.reduce((total, item) => total + (item.quantity || 0), 0)} items</span>
                     </div>
                   </div>
                 </div>
@@ -247,7 +247,7 @@ const SellerDashboard = ({ user }) => {
               </div>
               <div className="ml-4 flex-1">
                 <p className="text-sm font-medium text-gray-500">Inventory</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalItems || 0}</p>
+                <p className="text-2xl font-semibold text-gray-900">{items.reduce((total, item) => total + (item.quantity || 0), 0)}</p>
               </div>
             </div>
           </div>
@@ -457,7 +457,7 @@ const SellerDashboard = ({ user }) => {
                     to="/seller-dashboard"
                     className="block text-center text-blue-600 hover:text-blue-700 font-semibold py-4 border-t border-gray-200 hover:bg-blue-50 rounded-2xl transition-all duration-300"
                   >
-                    View all {items.length} items →
+                    View all {items.reduce((total, item) => total + (item.quantity || 0), 0)} items →
                   </Link>
                 )}
               </div>
@@ -582,7 +582,7 @@ const SellerDashboard = ({ user }) => {
                         <span className="text-sm">Copied!</span>
                       </>
                     ) : (
-                      <Copy className="h-4 w-4" />
+                    <Copy className="h-4 w-4" />
                     )}
                   </button>
                 </div>

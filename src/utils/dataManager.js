@@ -134,9 +134,17 @@ export const getUsers = () => {
   return getData(STORAGE_KEYS.USERS);
 };
 
-export const getUserById = (id) => {
-  const users = getUsers();
-  return users.find(user => user.id === id);
+export const getUserById = async (id) => {
+  try {
+    const userDoc = await getDoc(doc(db, 'users', id));
+    if (userDoc.exists()) {
+      return { id: userDoc.id, ...userDoc.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting user by ID:', error);
+    return null;
+  }
 };
 
 export const getCurrentUser = () => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingBag, User, Package } from 'lucide-react';
-import { getItemsBySeller, formatCurrency, formatDate } from '../utils/dataManager';
+import { getItemsBySeller, getUserById, formatCurrency, formatDate } from '../utils/dataManager';
 import ItemCard from './ItemCard';
 
 const SellerStoreView = ({ user }) => {
@@ -15,14 +15,20 @@ const SellerStoreView = ({ user }) => {
     loadSellerData();
   }, [userId]);
 
-  const loadSellerData = () => {
+  const loadSellerData = async () => {
     try {
-      const items = getItemsBySeller(userId);
+      const [items, sellerInfo] = await Promise.all([
+        getItemsBySeller(userId),
+        getUserById(userId)
+      ]);
+      
       setSellerItems(items);
       
-      // Get seller name from first item or use placeholder
-      if (items.length > 0) {
-        setSellerName(items[0].sellerName || 'Unknown Seller');
+      // Get seller name from user info or first item
+      if (sellerInfo && sellerInfo.name) {
+        setSellerName(sellerInfo.name);
+      } else if (items.length > 0 && items[0].sellerName) {
+        setSellerName(items[0].sellerName);
       } else {
         setSellerName('Unknown Seller');
       }
