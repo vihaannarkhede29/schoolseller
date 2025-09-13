@@ -123,13 +123,7 @@ function App() {
             />
             <Route 
               path="/seller/:userId" 
-              element={
-                currentUser ? 
-                <ProtectedRoute currentUser={currentUser} userRole={userRole}>
-                  <SellerStoreView user={currentUser} />
-                </ProtectedRoute> : 
-                <Navigate to="/login" replace />
-              } 
+              element={<SellerStoreView user={currentUser} />}
             />
             <Route 
               path="/add-item" 

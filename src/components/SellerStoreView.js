@@ -17,10 +17,14 @@ const SellerStoreView = ({ user }) => {
 
   const loadSellerData = async () => {
     try {
+      console.log('Loading seller data for userId:', userId);
       const [items, sellerInfo] = await Promise.all([
         getItemsBySeller(userId),
         getUserById(userId)
       ]);
+      
+      console.log('Loaded items:', items);
+      console.log('Loaded seller info:', sellerInfo);
       
       setSellerItems(items);
       
@@ -101,7 +105,7 @@ const SellerStoreView = ({ user }) => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {sellerItems.map((item) => (
-                <ItemCard key={item.id} item={item} user={user} />
+                <ItemCard key={item.id} item={item} currentUser={user} />
               ))}
             </div>
           </>
