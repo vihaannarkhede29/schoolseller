@@ -8,7 +8,7 @@ const firebaseConfig = {
   projectId: "schoolseller-f474f",
   storageBucket: "schoolseller-f474f.appspot.com",
   messagingSenderId: "215016043404",
-  appId: "1:215016043404:web:your-app-id"
+  appId: "1:215016043404:web:ba8dd96a4d2cdccc9bdca9"
 };
 
 // Initialize Firebase
