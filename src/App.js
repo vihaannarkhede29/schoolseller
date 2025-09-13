@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import { Analytics } from '@vercel/analytics/react';
 import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -173,6 +174,7 @@ function App() {
             
           </Routes>
         </main>
+        <Analytics />
       </div>
     </Router>
   );
