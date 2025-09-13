@@ -46,19 +46,25 @@ const SellerDashboard = ({ user }) => {
     loadData();
   }, []);
 
-  const loadData = () => {
-    // Use user.uid instead of user.id for Firebase compatibility
-    const userId = user.uid || user.id;
-    const sellerItems = getItemsBySeller(userId);
-    const sellerOrders = getOrdersBySeller(userId);
-    const sellerStats = getSellerStats(userId);
-    const appSettings = getSettings();
+  const loadData = async () => {
+    try {
+      // Use user.uid instead of user.id for Firebase compatibility
+      const userId = user.uid || user.id;
+      const [sellerItems, sellerOrders, sellerStats, appSettings] = await Promise.all([
+        getItemsBySeller(userId),
+        getOrdersBySeller(userId),
+        getSellerStats(userId),
+        getSettings()
+      ]);
 
-    setItems(sellerItems);
-    setOrders(sellerOrders);
-    setStats(sellerStats);
-    setSettings(appSettings);
-    setShareUrl(`${window.location.origin}/seller/${userId}`);
+      setItems(sellerItems);
+      setOrders(sellerOrders);
+      setStats(sellerStats);
+      setSettings(appSettings);
+      setShareUrl(`${window.location.origin}/seller/${userId}`);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
   };
 
   const getFilteredStats = () => {

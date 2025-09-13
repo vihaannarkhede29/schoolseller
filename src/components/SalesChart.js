@@ -9,6 +9,30 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    loadChartData();
+  }, [sellerId, period]);
+
+  const loadChartData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Load orders data
+      const orders = await getOrdersBySeller(sellerId);
+      const confirmedOrders = orders.filter(order => order.status === 'confirmed');
+      
+      // Calculate total sales
+      const total = confirmedOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+      setTotalSales(total);
+      
+      // Create chart after data is loaded
+      createChart(confirmedOrders);
+    } catch (error) {
+      console.error('Error loading chart data:', error);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     // Destroy existing chart if it exists
     if (chartInstanceRef.current) {
       chartInstanceRef.current.destroy();
@@ -21,7 +45,7 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
     
     const checkAndCreateChart = () => {
       if (window.Chart) {
-        createChart();
+        // Chart will be created when data is loaded
       } else if (retryCount < maxRetries) {
         retryCount++;
         setTimeout(checkAndCreateChart, 100);
@@ -32,9 +56,9 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
     };
 
     checkAndCreateChart();
-  }, [sellerId, period]);
+  }, []);
 
-  const createChart = () => {
+  const createChart = (orders = []) => {
     if (!window.Chart) {
       setIsLoading(false);
       return;
@@ -42,11 +66,11 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
     
     if (!chartRef.current) {
       // Canvas not ready yet, try again in a moment
-      setTimeout(createChart, 50);
+      setTimeout(() => createChart(orders), 50);
       return;
     }
 
-    // Generate empty data for new users
+    // Generate data based on orders or empty data for new users
     let labels, data;
     switch (period) {
       case 'day':

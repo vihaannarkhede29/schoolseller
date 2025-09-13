@@ -1,5 +1,19 @@
 // Data management utilities for SchoolSeller app
 import { format } from 'date-fns';
+import { 
+  collection, 
+  doc, 
+  getDocs, 
+  getDoc, 
+  setDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy 
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
 // No sample data - app starts with empty state
 
@@ -43,31 +57,54 @@ export const setData = (key, data) => {
 };
 
 // Items management
-export const getItems = () => {
-  return getData(STORAGE_KEYS.ITEMS);
+export const getItems = async () => {
+  try {
+    const itemsSnapshot = await getDocs(collection(db, 'items'));
+    return itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error getting items:', error);
+    return [];
+  }
 };
 
-export const getItemById = (id) => {
-  const items = getItems();
-  return items.find(item => item.id === id);
+export const getItemById = async (id) => {
+  try {
+    const itemDoc = await getDoc(doc(db, 'items', id));
+    if (itemDoc.exists()) {
+      return { id: itemDoc.id, ...itemDoc.data() };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting item:', error);
+    return null;
+  }
 };
 
-export const getItemsBySeller = (sellerId) => {
-  const items = getItems();
-  return items.filter(item => item.sellerId === sellerId);
+export const getItemsBySeller = async (sellerId) => {
+  try {
+    const q = query(collection(db, 'items'), where('sellerId', '==', sellerId));
+    const itemsSnapshot = await getDocs(q);
+    return itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error getting items by seller:', error);
+    return [];
+  }
 };
 
-export const addItem = (item) => {
-  const items = getItems();
-  const newItem = {
-    ...item,
-    id: Date.now().toString(),
-    createdAt: new Date(),
-    status: 'active'
-  };
-  items.push(newItem);
-  setData(STORAGE_KEYS.ITEMS, items);
-  return newItem;
+export const addItem = async (item) => {
+  try {
+    const newItem = {
+      ...item,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'active'
+    };
+    const docRef = await addDoc(collection(db, 'items'), newItem);
+    return { id: docRef.id, ...newItem };
+  } catch (error) {
+    console.error('Error adding item:', error);
+    throw error;
+  }
 };
 
 export const updateItem = (id, updates) => {
@@ -112,18 +149,36 @@ export const logout = () => {
 };
 
 // Orders management
-export const getOrders = () => {
-  return getData(STORAGE_KEYS.ORDERS);
+export const getOrders = async () => {
+  try {
+    const ordersSnapshot = await getDocs(collection(db, 'orders'));
+    return ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error getting orders:', error);
+    return [];
+  }
 };
 
-export const getOrdersBySeller = (sellerId) => {
-  const orders = getOrders();
-  return orders.filter(order => order.sellerId === sellerId);
+export const getOrdersBySeller = async (sellerId) => {
+  try {
+    const q = query(collection(db, 'orders'), where('sellerId', '==', sellerId));
+    const ordersSnapshot = await getDocs(q);
+    return ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error getting orders by seller:', error);
+    return [];
+  }
 };
 
-export const getOrdersByBuyer = (buyerId) => {
-  const orders = getOrders();
-  return orders.filter(order => order.buyerId === buyerId);
+export const getOrdersByBuyer = async (buyerId) => {
+  try {
+    const q = query(collection(db, 'orders'), where('buyerId', '==', buyerId));
+    const ordersSnapshot = await getDocs(q);
+    return ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error getting orders by buyer:', error);
+    return [];
+  }
 };
 
 export const addOrder = (order) => {
@@ -166,23 +221,38 @@ export const updateSettings = (updates) => {
 };
 
 // Analytics functions
-export const getSellerStats = (sellerId) => {
-  const items = getItemsBySeller(sellerId);
-  const orders = getOrdersBySeller(sellerId);
-  const confirmedOrders = orders.filter(order => order.status === 'confirmed');
-  
-  const totalSales = confirmedOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-  const totalItems = items.length;
-  const activeReservations = orders.filter(order => order.status === 'pending').length;
-  const pendingOrders = orders.filter(order => order.status === 'pending').length;
-  
-  return {
-    totalSales,
-    totalItems,
-    activeReservations,
-    pendingOrders,
-    totalOrders: confirmedOrders.length
-  };
+export const getSellerStats = async (sellerId) => {
+  try {
+    const items = await getItemsBySeller(sellerId);
+    const orders = await getOrdersBySeller(sellerId);
+    const confirmedOrders = orders.filter(order => order.status === 'confirmed');
+    
+    const totalSales = confirmedOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    const totalItems = items.length;
+    const activeReservations = orders.filter(order => order.status === 'pending').length;
+    const pendingOrders = orders.filter(order => order.status === 'pending').length;
+    
+    return {
+      totalSales,
+      totalItems,
+      activeReservations,
+      pendingOrders,
+      totalOrders: confirmedOrders.length,
+      totalItemsSold: confirmedOrders.reduce((sum, order) => sum + (order.quantity || 0), 0),
+      totalRevenue: totalSales
+    };
+  } catch (error) {
+    console.error('Error getting seller stats:', error);
+    return {
+      totalSales: 0,
+      totalItems: 0,
+      activeReservations: 0,
+      pendingOrders: 0,
+      totalOrders: 0,
+      totalItemsSold: 0,
+      totalRevenue: 0
+    };
+  }
 };
 
 export const getPopularItems = () => {
