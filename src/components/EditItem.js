@@ -30,21 +30,31 @@ const EditItem = ({ user }) => {
   ];
 
   useEffect(() => {
-    const item = getItemById(id);
-    if (item && item.sellerId === user.id) {
-      setFormData({
-        name: item.name,
-        price: item.price.toString(),
-        quantity: item.quantity.toString(),
-        category: item.category,
-        description: item.description,
-        image: item.image
-      });
-    } else {
-      navigate('/seller');
-    }
-    setLoading(false);
-  }, [id, user.id, navigate]);
+    const loadItem = async () => {
+      try {
+        const item = await getItemById(id);
+        if (item && item.sellerId === (user.uid || user.id)) {
+          setFormData({
+            name: item.name,
+            price: item.price.toString(),
+            quantity: item.quantity.toString(),
+            category: item.category,
+            description: item.description,
+            image: item.image
+          });
+        } else {
+          navigate('/seller-dashboard');
+        }
+      } catch (error) {
+        console.error('Error loading item:', error);
+        navigate('/seller-dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadItem();
+  }, [id, user.uid, user.id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -104,10 +114,10 @@ const EditItem = ({ user }) => {
         quantity: parseInt(formData.quantity)
       };
 
-      updateItem(id, updatedItem);
+      await updateItem(id, updatedItem);
       
       alert('Item updated successfully!');
-      navigate('/seller');
+      navigate('/seller-dashboard');
     } catch (error) {
       console.error('Error updating item:', error);
       alert('Error updating item. Please try again.');

@@ -89,9 +89,9 @@ const AddItem = ({ user }) => {
         image: formData.image || 'https://via.placeholder.com/300x200?text=No+Image'
       };
 
-      addItem(newItem);
+      await addItem(newItem);
       
-      // Show success message (you could add a toast notification here)
+      // Show success message
       alert('Item added successfully!');
       
       // Navigate back to seller dashboard

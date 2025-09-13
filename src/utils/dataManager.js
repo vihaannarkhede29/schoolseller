@@ -107,15 +107,19 @@ export const addItem = async (item) => {
   }
 };
 
-export const updateItem = (id, updates) => {
-  const items = getItems();
-  const index = items.findIndex(item => item.id === id);
-  if (index !== -1) {
-    items[index] = { ...items[index], ...updates };
-    setData(STORAGE_KEYS.ITEMS, items);
-    return items[index];
+export const updateItem = async (id, updates) => {
+  try {
+    const itemRef = doc(db, 'items', id);
+    const updatedData = {
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    await updateDoc(itemRef, updatedData);
+    return { id, ...updatedData };
+  } catch (error) {
+    console.error('Error updating item:', error);
+    throw error;
   }
-  return null;
 };
 
 export const deleteItem = (id) => {

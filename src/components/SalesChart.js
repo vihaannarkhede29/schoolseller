@@ -9,6 +9,13 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Destroy existing chart if it exists
+    if (chartInstanceRef.current) {
+      chartInstanceRef.current.destroy();
+      chartInstanceRef.current = null;
+    }
+
+    // Load data and create chart
     loadChartData();
   }, [sellerId, period]);
 
@@ -24,39 +31,28 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
       const total = confirmedOrders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
       setTotalSales(total);
       
-      // Create chart after data is loaded
-      createChart(confirmedOrders);
+      // Wait for Chart.js to be available, then create chart
+      let retryCount = 0;
+      const maxRetries = 50;
+      
+      const createChartWhenReady = () => {
+        if (window.Chart && chartRef.current) {
+          createChart(confirmedOrders);
+        } else if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(createChartWhenReady, 100);
+        } else {
+          console.error('Chart.js failed to load');
+          setIsLoading(false);
+        }
+      };
+      
+      createChartWhenReady();
     } catch (error) {
       console.error('Error loading chart data:', error);
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    // Destroy existing chart if it exists
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.destroy();
-      chartInstanceRef.current = null;
-    }
-
-    // Wait for Chart.js to be available
-    let retryCount = 0;
-    const maxRetries = 50; // 5 seconds max wait time
-    
-    const checkAndCreateChart = () => {
-      if (window.Chart) {
-        // Chart will be created when data is loaded
-      } else if (retryCount < maxRetries) {
-        retryCount++;
-        setTimeout(checkAndCreateChart, 100);
-      } else {
-        console.error('Chart.js failed to load after 5 seconds');
-        setIsLoading(false);
-      }
-    };
-
-    checkAndCreateChart();
-  }, []);
 
   const createChart = (orders = []) => {
     if (!window.Chart) {

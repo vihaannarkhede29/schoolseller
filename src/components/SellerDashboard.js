@@ -41,6 +41,7 @@ const SellerDashboard = ({ user }) => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [timeFilter, setTimeFilter] = useState('week'); // day, week, month
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -89,9 +90,23 @@ const SellerDashboard = ({ user }) => {
     loadData();
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    // You could add a toast notification here
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000); // Hide after 2 seconds
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const generateSocialPost = (platform) => {
@@ -557,9 +572,18 @@ const SellerDashboard = ({ user }) => {
                   />
                   <button
                     onClick={() => copyToClipboard(shareUrl)}
-                    className="btn btn-outline rounded-l-none border-l-0"
+                    className={`btn rounded-l-none border-l-0 flex items-center space-x-2 ${
+                      copied ? 'bg-green-500 text-white border-green-500' : 'btn-outline'
+                    }`}
                   >
-                    <Copy className="h-4 w-4" />
+                    {copied ? (
+                      <>
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm">Copied!</span>
+                      </>
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
