@@ -65,8 +65,8 @@ const Login = () => {
       userData.role = role;
       localStorage.setItem('currentUser', JSON.stringify(userData));
       
-      // Navigate to the appropriate dashboard
-      navigate(`/${role.toLowerCase()}-dashboard`);
+      // Force a page reload to refresh the auth state and user role
+      window.location.href = `/${role.toLowerCase()}-dashboard`;
     } catch (error) {
       console.error('Error setting role:', error);
       alert('Error setting role. Please try again.');
