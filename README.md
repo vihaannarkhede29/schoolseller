@@ -15,26 +15,33 @@ A web application for students to buy, sell, and reserve items like snacks, scho
 - **Order Management**: Optional approval system for orders
 - **Social Sharing**: Sellers can share their store links and post to social media
 - **Responsive Design**: Works on desktop and mobile devices
-- **Local Storage**: Data persists in browser (no backend required for demo)
+- **Firebase Integration**: Real-time data with Google Authentication
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js (version 14 or higher)
 - npm or yarn
+- Firebase project setup
 
 ### Installation
 
-1. Clone or download the project
-2. Navigate to the project directory:
+1. Clone the repository:
    ```bash
-   cd SchoolSeller
+   git clone https://github.com/vihaannarkhede29/schoolseller.git
+   cd schoolseller
    ```
 
-3. Install dependencies:
+2. Install dependencies:
    ```bash
    npm install
    ```
+
+3. Set up Firebase:
+   - Create a Firebase project
+   - Enable Authentication (Google provider)
+   - Enable Firestore Database
+   - Update `src/firebase.js` with your config
 
 4. Start the development server:
    ```bash
@@ -43,115 +50,39 @@ A web application for students to buy, sell, and reserve items like snacks, scho
 
 5. Open your browser and go to `http://localhost:3000`
 
-## Demo Users
+## Tech Stack
 
-The app comes with pre-configured demo users. Use password `password123` for all users:
-
-### Sellers
-- Alex Johnson (alex.johnson@school.edu)
-- Sarah Chen (sarah.chen@school.edu)
-- Mike Rodriguez (mike.rodriguez@school.edu)
-
-### Buyers
-- Jordan Smith (jordan.smith@school.edu)
-- Sam Wilson (sam.wilson@school.edu)
+- **React 18** - Frontend framework
+- **Firebase** - Authentication and database
+- **Chart.js** - Analytics and charts
+- **Tailwind CSS** - Styling
+- **React Router** - Client-side routing
+- **Lucide React** - Icon library
 
 ## Usage
 
 ### For Sellers
-1. Login as a seller
-2. Add items to your inventory
-3. Manage incoming reservations and orders
-4. Toggle order approval on/off
+1. Sign in with Google
+2. Choose "I'm a Seller" role
+3. Add items to your inventory
+4. Manage incoming reservations and orders
 5. Share your store link on social media
 6. Track sales and analytics
 
 ### For Buyers
-1. Login as a buyer
-2. Browse available items by category
-3. Reserve items you want to purchase
-4. Track your order status
-5. Complete transactions in person with cash
+1. Sign in with Google
+2. Choose "I'm a Buyer" role
+3. Browse available items
+4. Reserve items you want to purchase
+5. Track your order status
+6. Complete transactions in person with cash
 
-### For Admins
-1. Login as admin (add admin user to data)
-2. View platform analytics
-3. Manage items and users
-4. Monitor order activity
+## Deployment
 
-## Technical Details
-
-### Built With
-- **React 18** - Frontend framework
-- **React Router** - Client-side routing
-- **Lucide React** - Icon library
-- **CSS3** - Styling with custom utility classes
-- **Local Storage** - Data persistence
-
-### Project Structure
-```
-src/
-├── components/          # React components
-│   ├── Header.js       # Navigation header
-│   ├── Login.js        # User authentication
-│   ├── SellerDashboard.js
-│   ├── BuyerDashboard.js
-│   ├── ItemCard.js     # Item display component
-│   ├── OrderCard.js    # Order display component
-│   ├── AddItem.js      # Add new item form
-│   ├── EditItem.js     # Edit item form
-│   ├── ItemDetail.js   # Item detail view
-│   ├── Orders.js       # Order management
-│   ├── Profile.js      # User profile
-│   └── AdminPanel.js   # Admin dashboard
-├── utils/
-│   └── dataManager.js  # Data management utilities
-├── App.js              # Main app component
-├── App.css             # App-specific styles
-├── index.js            # App entry point
-└── index.css           # Global styles
-```
-
-## Security Features for School Environment
-
-1. **Content Moderation**: Admin panel for removing inappropriate content
-2. **User Verification**: Email-based user identification
-3. **Order Approval**: Optional approval system for transactions
-4. **Cash-Only**: No payment processing reduces security risks
-5. **Local Data**: No external data sharing
-
-## Future Improvements
-
-### UX Enhancements
-- Real-time notifications
-- In-app messaging between users
-- Push notifications for order updates
-- Advanced search and filtering
-- Item categories and tags
-- User ratings and reviews
-
-### Security Enhancements
-- User authentication with school email verification
-- Content reporting system
-- Automated content moderation
-- User blocking/reporting features
-- Transaction history and receipts
-
-### Technical Improvements
-- Backend API with database
-- Real-time updates with WebSockets
-- Image upload and storage
-- Mobile app (React Native)
-- Offline support with PWA
-- Analytics and reporting dashboard
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+This app is ready for deployment on platforms like:
+- **Vercel** (recommended)
+- **Netlify**
+- **Firebase Hosting**
 
 ## License
 
@@ -159,9 +90,8 @@ This project is open source and available under the MIT License.
 
 ## Support
 
-For questions or support, please contact the development team or create an issue in the repository.
+For questions or support, please create an issue in the repository.
 
 ---
 
-**Note**: This is a demo application for educational purposes. In a production environment, you would need to implement proper authentication, data validation, and security measures.
-
+**Note**: This is a production-ready application with Firebase integration and modern React features.
