@@ -19,7 +19,7 @@ const Header = ({ currentUser, userRole, onLogout }) => {
 
   const handleLogout = () => {
     onLogout();
-    navigate('/');
+    // Navigation will be handled by the auth state change in App.js
   };
 
   const toggleMenu = () => {
