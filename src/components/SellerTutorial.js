@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronRight, ChevronLeft, Package, ShoppingCart, TrendingUp, DollarSign, CheckCircle } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Package, ShoppingCart, TrendingUp, DollarSign, CheckCircle, Clock } from 'lucide-react';
 
 const SellerTutorial = ({ isOpen, onClose, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
