@@ -20,12 +20,19 @@ const BuyerDashboard = ({ user }) => {
     filterAndSortItems();
   }, [items, searchTerm, selectedCategory, sortBy]);
 
-  const loadData = () => {
-    const allItems = getItems().filter(item => item.status === 'active');
-    const buyerOrders = getOrdersByBuyer(user.uid || user.id);
-    
-    setItems(allItems);
-    setOrders(buyerOrders);
+  const loadData = async () => {
+    try {
+      const allItems = await getItems();
+      const activeItems = allItems.filter(item => item.status === 'active');
+      const buyerOrders = await getOrdersByBuyer(user.uid || user.id);
+      
+      setItems(activeItems);
+      setOrders(buyerOrders);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setItems([]);
+      setOrders([]);
+    }
   };
 
   const filterAndSortItems = () => {
@@ -66,10 +73,47 @@ const BuyerDashboard = ({ user }) => {
 
   const categories = ['all', ...new Set(items.map(item => item.category))];
 
-  const handleReserveItem = (item) => {
-    // This would typically open a modal or navigate to a reservation page
-    // For now, we'll just show an alert
-    alert(`Reservation feature coming soon! You would reserve ${item.name} here.`);
+  const handleReserveItem = async (item) => {
+    try {
+      // Create a reservation/order
+      const order = {
+        itemId: item.id,
+        itemName: item.name,
+        itemPrice: item.price,
+        quantity: 1,
+        totalAmount: item.price,
+        sellerId: item.sellerId,
+        sellerName: item.sellerName,
+        buyerId: user.uid || user.id,
+        buyerName: user.displayName || user.name || 'Unknown Buyer',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+
+      // Add order to Firestore
+      const { addDoc, collection } = await import('firebase/firestore');
+      const { db } = await import('../firebase');
+      
+      await addDoc(collection(db, 'orders'), order);
+      
+      // Update local state
+      const newOrder = { id: Date.now().toString(), ...order };
+      setOrders(prev => [...prev, newOrder]);
+      
+      // Update item quantity
+      const { updateDoc, doc } = await import('firebase/firestore');
+      await updateDoc(doc(db, 'items', item.id), {
+        quantity: item.quantity - 1
+      });
+      
+      // Reload items to reflect quantity change
+      loadData();
+      
+      alert(`Successfully reserved ${item.name}! The seller will review your request.`);
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      alert('Error creating reservation. Please try again.');
+    }
   };
 
   const pendingOrders = orders.filter(order => order.status === 'pending');

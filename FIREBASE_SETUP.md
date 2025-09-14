@@ -64,3 +64,4 @@ service cloud.firestore {
 ## Current Status
 The app now works with localStorage as a fallback, so the permissions error won't break the functionality. Once you deploy the Firestore rules, the app will use Firestore for data persistence.
 
+

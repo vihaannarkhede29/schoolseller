@@ -204,3 +204,4 @@ const ItemDetail = ({ user }) => {
 
 export default ItemDetail;
 
+

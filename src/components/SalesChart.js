@@ -50,7 +50,8 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
       createChartWhenReady();
     } catch (error) {
       console.error('Error loading chart data:', error);
-      setIsLoading(false);
+      // Create chart with empty data if there's an error
+      createChart([]);
     }
   };
 
