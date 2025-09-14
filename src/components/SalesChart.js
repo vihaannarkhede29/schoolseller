@@ -87,7 +87,8 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
         data = [0, 0, 0, 0, 0, 0, 0];
     }
 
-    const total = data.reduce((sum, value) => sum + value, 0);
+    // Calculate actual sales from orders
+    const total = orders.reduce((sum, order) => sum + (order.totalPrice || order.totalAmount || 0), 0);
     setTotalSales(total);
 
     try {
@@ -231,6 +232,15 @@ const SalesChart = ({ sellerId, period = 'week' }) => {
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500">Loading chart...</div>
+          </div>
+        ) : totalSales === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <TrendingUp className="h-16 w-16 text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Sales Yet</h3>
+            <p className="text-gray-500 max-w-sm">
+              Your sales data will appear here once you start receiving orders. 
+              Share your store link to get your first customers!
+            </p>
           </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center">

@@ -122,11 +122,14 @@ export const updateItem = async (id, updates) => {
   }
 };
 
-export const deleteItem = (id) => {
-  const items = getItems();
-  const filteredItems = items.filter(item => item.id !== id);
-  setData(STORAGE_KEYS.ITEMS, filteredItems);
-  return true;
+export const deleteItem = async (id) => {
+  try {
+    await deleteDoc(doc(db, 'items', id));
+    return true;
+  } catch (error) {
+    console.error('Error deleting item:', error);
+    throw error;
+  }
 };
 
 // Users management
@@ -193,31 +196,38 @@ export const getOrdersByBuyer = async (buyerId) => {
   }
 };
 
-export const addOrder = (order) => {
-  const orders = getOrders();
-  const newOrder = {
-    ...order,
-    id: Date.now().toString(),
-    createdAt: new Date(),
-    status: 'pending'
-  };
-  orders.push(newOrder);
-  setData(STORAGE_KEYS.ORDERS, orders);
-  return newOrder;
+export const addOrder = async (order) => {
+  try {
+    const newOrder = {
+      ...order,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: 'pending'
+    };
+    const docRef = await addDoc(collection(db, 'orders'), newOrder);
+    return { id: docRef.id, ...newOrder };
+  } catch (error) {
+    console.error('Error adding order:', error);
+    throw error;
+  }
 };
 
-export const updateOrder = (id, updates) => {
-  const orders = getOrders();
-  const index = orders.findIndex(order => order.id === id);
-  if (index !== -1) {
-    orders[index] = { ...orders[index], ...updates };
+export const updateOrder = async (id, updates) => {
+  try {
+    const orderRef = doc(db, 'orders', id);
+    const updatedData = {
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
     if (updates.status === 'confirmed') {
-      orders[index].confirmedAt = new Date();
+      updatedData.confirmedAt = new Date().toISOString();
     }
-    setData(STORAGE_KEYS.ORDERS, orders);
-    return orders[index];
+    await updateDoc(orderRef, updatedData);
+    return { id, ...updatedData };
+  } catch (error) {
+    console.error('Error updating order:', error);
+    throw error;
   }
-  return null;
 };
 
 // Settings management

@@ -157,7 +157,7 @@ const EditItem = ({ user }) => {
         {/* Header */}
         <div className="flex items-center mb-8">
           <button
-            onClick={() => navigate('/seller')}
+            onClick={() => navigate('/seller-dashboard')}
             className="flex items-center text-gray-600 hover:text-gray-900 mr-4"
           >
             <ArrowLeft className="h-5 w-5 mr-1" />
@@ -167,7 +167,7 @@ const EditItem = ({ user }) => {
         </div>
 
         <div className="max-w-2xl mx-auto">
-          <div className="card">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Item Image */}
               <div>
@@ -180,7 +180,7 @@ const EditItem = ({ user }) => {
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
-                      className="form-input"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       Upload a new image or keep the current one
@@ -207,7 +207,7 @@ const EditItem = ({ user }) => {
 
               {/* Item Name */}
               <div>
-                <label htmlFor="name" className="form-label">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Item Name *
                 </label>
                 <input
@@ -216,7 +216,7 @@ const EditItem = ({ user }) => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`form-input ${errors.name ? 'border-red-500' : ''}`}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="e.g., Hot Cheetos, Pencils, Notebook"
                 />
                 {errors.name && (
@@ -227,7 +227,7 @@ const EditItem = ({ user }) => {
               {/* Price and Quantity */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="price" className="form-label">
+                  <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
                     Price ($) *
                   </label>
                   <input
@@ -238,7 +238,7 @@ const EditItem = ({ user }) => {
                     onChange={handleChange}
                     step="0.01"
                     min="0"
-                    className={`form-input ${errors.price ? 'border-red-500' : ''}`}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.price ? 'border-red-500' : 'border-gray-300'}`}
                     placeholder="0.00"
                   />
                   {errors.price && (
@@ -247,7 +247,7 @@ const EditItem = ({ user }) => {
                 </div>
 
                 <div>
-                  <label htmlFor="quantity" className="form-label">
+                  <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-2">
                     Quantity *
                   </label>
                   <input
@@ -257,7 +257,7 @@ const EditItem = ({ user }) => {
                     value={formData.quantity}
                     onChange={handleChange}
                     min="1"
-                    className={`form-input ${errors.quantity ? 'border-red-500' : ''}`}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.quantity ? 'border-red-500' : 'border-gray-300'}`}
                     placeholder="1"
                   />
                   {errors.quantity && (
@@ -268,7 +268,7 @@ const EditItem = ({ user }) => {
 
               {/* Category */}
               <div>
-                <label htmlFor="category" className="form-label">
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
                   Category *
                 </label>
                 <select
@@ -276,7 +276,7 @@ const EditItem = ({ user }) => {
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className={`form-select ${errors.category ? 'border-red-500' : ''}`}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category ? 'border-red-500' : 'border-gray-300'}`}
                 >
                   <option value="">Select a category</option>
                   {categories.map(category => (
@@ -292,7 +292,7 @@ const EditItem = ({ user }) => {
 
               {/* Description */}
               <div>
-                <label htmlFor="description" className="form-label">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                   Description *
                 </label>
                 <textarea
@@ -301,7 +301,7 @@ const EditItem = ({ user }) => {
                   value={formData.description}
                   onChange={handleChange}
                   rows={4}
-                  className={`form-textarea ${errors.description ? 'border-red-500' : ''}`}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="Describe your item in detail..."
                 />
                 {errors.description && (
@@ -313,15 +313,15 @@ const EditItem = ({ user }) => {
               <div className="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => navigate('/seller')}
-                  className="btn btn-outline"
+                  onClick={() => navigate('/seller-dashboard')}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn btn-primary"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isSubmitting ? 'Updating Item...' : 'Update Item'}
                 </button>

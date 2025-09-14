@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Package, User, Mail, Share2, Instagram, Twitter, Facebook, Copy, CheckCircle } from 'lucide-react';
-import { getItemsBySeller, getUserById, formatCurrency } from '../utils/dataManager';
+import { Package, User, Share2, Instagram, Twitter, Facebook, Copy, CheckCircle, ShoppingCart } from 'lucide-react';
+import { getItemsBySeller, getUserById, formatCurrency, addOrder, updateItem } from '../utils/dataManager';
 
 const SellerStoreView = ({ user }) => {
   const { userId } = useParams();
@@ -9,6 +9,7 @@ const SellerStoreView = ({ user }) => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [reserving, setReserving] = useState({});
 
   useEffect(() => {
     loadSellerData();
@@ -28,6 +29,63 @@ const SellerStoreView = ({ user }) => {
       console.error('Error loading seller data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReserveItem = async (item) => {
+    if (!user) {
+      alert('Please sign in to reserve items');
+      return;
+    }
+
+    if (item.quantity <= 0) {
+      alert('This item is out of stock');
+      return;
+    }
+
+    try {
+      setReserving(prev => ({ ...prev, [item.id]: true }));
+
+      // Create order object
+      const order = {
+        itemId: item.id,
+        itemName: item.name,
+        itemPrice: item.price,
+        itemImage: item.image,
+        sellerId: userId,
+        sellerName: seller?.displayName || seller?.email || 'Unknown Seller',
+        buyerId: user.uid,
+        buyerName: user.displayName || user.email || 'Unknown Buyer',
+        quantity: 1,
+        totalPrice: item.price,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Save order to Firestore
+      await addOrder(order);
+
+      // Update item quantity
+      await updateItem(item.id, {
+        quantity: item.quantity - 1
+      });
+
+      // Update local state
+      setItems(prevItems => 
+        prevItems.map(i => 
+          i.id === item.id 
+            ? { ...i, quantity: i.quantity - 1 }
+            : i
+        )
+      );
+
+      alert(`Successfully reserved ${item.name}! The seller will contact you to arrange pickup and payment.`);
+    } catch (error) {
+      console.error('Error reserving item:', error);
+      alert('Failed to reserve item. Please try again.');
+    } finally {
+      setReserving(prev => ({ ...prev, [item.id]: false }));
     }
   };
 
@@ -164,7 +222,10 @@ const SellerStoreView = ({ user }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {items.map((item) => (
-                <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
+                <div 
+                  key={item.id} 
+                  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300"
+                >
                   <div className="aspect-w-16 aspect-h-9">
                     <img
                       src={item.image}
@@ -189,7 +250,7 @@ const SellerStoreView = ({ user }) => {
                       {item.description}
                     </p>
                     
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-sm mb-4">
                       <span className="text-gray-600">
                         Qty: {item.quantity}
                       </span>
@@ -201,6 +262,33 @@ const SellerStoreView = ({ user }) => {
                         {item.quantity > 0 ? 'In Stock' : 'Out of Stock'}
                       </span>
                     </div>
+
+                    {/* Reserve Button */}
+                    <button
+                      onClick={() => handleReserveItem(item)}
+                      disabled={item.quantity <= 0 || reserving[item.id]}
+                      className={`w-full flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        item.quantity <= 0
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : reserving[item.id]
+                          ? 'bg-blue-100 text-blue-600 cursor-not-allowed'
+                          : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md'
+                      }`}
+                    >
+                      {reserving[item.id] ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                          Reserving...
+                        </>
+                      ) : item.quantity <= 0 ? (
+                        'Out of Stock'
+                      ) : (
+                        <>
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          Reserve Item
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -208,19 +296,6 @@ const SellerStoreView = ({ user }) => {
           )}
         </div>
 
-        {/* Contact Info */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Contact Seller</h3>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center text-gray-600">
-              <Mail className="h-4 w-4 mr-2" />
-              <span>{seller.email || 'No email provided'}</span>
-            </div>
-          </div>
-          <p className="text-sm text-gray-500 mt-2">
-            Contact the seller directly to arrange pickup and payment.
-          </p>
-        </div>
       </div>
     </div>
   );

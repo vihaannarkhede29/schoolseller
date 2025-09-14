@@ -11,19 +11,71 @@ const ItemDetail = ({ user }) => {
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    const itemData = getItemById(id);
-    if (itemData) {
-      setItem(itemData);
-    } else {
-      navigate('/buyer');
-    }
-    setLoading(false);
+    const loadItem = async () => {
+      try {
+        setLoading(true);
+        const itemData = await getItemById(id);
+        if (itemData) {
+          setItem(itemData);
+        } else {
+          navigate('/buyer-dashboard');
+        }
+      } catch (error) {
+        console.error('Error loading item:', error);
+        navigate('/buyer-dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadItem();
   }, [id, navigate]);
 
-  const handleReserve = () => {
-    if (user.role === 'buyer') {
-      // In a real app, this would create a reservation
-      alert(`Reservation feature coming soon! You would reserve ${quantity} ${item.name}(s) here.`);
+  const handleReserve = async () => {
+    if (!user) {
+      alert('Please sign in to reserve items');
+      return;
+    }
+
+    if (user.role !== 'buyer') {
+      alert('Only buyers can reserve items');
+      return;
+    }
+
+    if (item.quantity < quantity) {
+      alert('Not enough items in stock');
+      return;
+    }
+
+    try {
+      // Create order object
+      const order = {
+        itemId: item.id,
+        itemName: item.name,
+        itemPrice: item.price,
+        itemImage: item.image,
+        sellerId: item.sellerId,
+        sellerName: item.sellerName,
+        buyerId: user.uid,
+        buyerName: user.displayName || user.email || 'Unknown Buyer',
+        quantity: quantity,
+        totalPrice: item.price * quantity,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // Import addOrder from dataManager
+      const { addOrder } = await import('../utils/dataManager');
+      
+      // Save order to Firestore
+      await addOrder(order);
+
+      alert(`Successfully reserved ${quantity} ${item.name}(s)! The seller will contact you to arrange pickup and payment.`);
+      navigate('/buyer-dashboard');
+    } catch (error) {
+      console.error('Error reserving item:', error);
+      alert('Failed to reserve item. Please try again.');
     }
   };
 
@@ -57,8 +109,8 @@ const ItemDetail = ({ user }) => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Item not found</h2>
           <button
-            onClick={() => navigate('/buyer')}
-            className="btn btn-primary"
+            onClick={() => navigate('/buyer-dashboard')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Back to Browse
           </button>
@@ -73,7 +125,7 @@ const ItemDetail = ({ user }) => {
         {/* Header */}
         <div className="flex items-center mb-8">
           <button
-            onClick={() => navigate(user.role === 'seller' ? '/seller' : '/buyer')}
+            onClick={() => navigate(user.role === 'seller' ? '/seller-dashboard' : '/buyer-dashboard')}
             className="flex items-center text-gray-600 hover:text-gray-900 mr-4"
           >
             <ArrowLeft className="h-5 w-5 mr-1" />
@@ -139,7 +191,7 @@ const ItemDetail = ({ user }) => {
                       id="quantity"
                       value={quantity}
                       onChange={(e) => setQuantity(parseInt(e.target.value))}
-                      className="form-select"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {Array.from({ length: Math.min(item.quantity, 10) }, (_, i) => i + 1).map(num => (
                         <option key={num} value={num}>{num}</option>
@@ -151,7 +203,7 @@ const ItemDetail = ({ user }) => {
                     <button
                       onClick={handleReserve}
                       disabled={item.quantity === 0}
-                      className="btn btn-primary flex-1 flex items-center justify-center space-x-2"
+                      className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                     >
                       <ShoppingCart className="h-5 w-5" />
                       <span>
@@ -160,7 +212,7 @@ const ItemDetail = ({ user }) => {
                     </button>
                     <button
                       onClick={handleShare}
-                      className="btn btn-outline flex items-center justify-center"
+                      className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center"
                     >
                       <Share2 className="h-5 w-5" />
                     </button>
@@ -182,13 +234,13 @@ const ItemDetail = ({ user }) => {
                 <div className="flex space-x-3">
                   <button
                     onClick={() => navigate(`/edit-item/${item.id}`)}
-                    className="btn btn-primary flex-1"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Edit Item
                   </button>
                   <button
-                    onClick={() => navigate('/seller')}
-                    className="btn btn-outline"
+                    onClick={() => navigate('/seller-dashboard')}
+                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                   >
                     Back to Dashboard
                   </button>

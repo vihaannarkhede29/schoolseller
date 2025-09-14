@@ -18,18 +18,30 @@ const Orders = ({ user }) => {
     loadOrders();
   }, []);
 
-  const loadOrders = () => {
-    const userOrders = user.role === 'seller' 
-      ? getOrdersBySeller(user.id)
-      : getOrdersByBuyer(user.id);
-    
-    setOrders(userOrders);
-    setLoading(false);
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      const userOrders = user.role === 'seller' 
+        ? await getOrdersBySeller(user.uid)
+        : await getOrdersByBuyer(user.uid);
+      
+      setOrders(userOrders);
+    } catch (error) {
+      console.error('Error loading orders:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleOrderUpdate = (orderId, updates) => {
-    updateOrder(orderId, updates);
-    loadOrders(); // Reload orders after update
+  const handleOrderUpdate = async (orderId, updates) => {
+    try {
+      await updateOrder(orderId, updates);
+      loadOrders(); // Reload orders after update
+    } catch (error) {
+      console.error('Error updating order:', error);
+      alert('Failed to update order. Please try again.');
+    }
   };
 
   const filteredOrders = orders.filter(order => {
@@ -149,16 +161,21 @@ const Orders = ({ user }) => {
           <div className="card text-center py-12">
             <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {filter === 'all' ? 'No orders yet' : `No ${filter} orders`}
+              {filter === 'all' ? 'No sales yet' : `No ${filter} orders`}
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-4">
               {filter === 'all' 
                 ? user.role === 'seller' 
-                  ? 'Orders will appear here when customers make reservations'
+                  ? 'Orders will appear here when customers make reservations. Share your store link to get started!'
                   : 'Your orders and reservations will appear here'
                 : `No orders with ${filter} status`
               }
             </p>
+            {user.role === 'seller' && filter === 'all' && (
+              <div className="text-sm text-blue-600">
+                💡 Tip: Add items to your inventory and share your store link to start receiving orders!
+              </div>
+            )}
           </div>
         ) : (
           <div className="space-y-4">

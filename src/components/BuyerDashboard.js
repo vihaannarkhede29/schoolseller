@@ -91,18 +91,16 @@ const BuyerDashboard = ({ user }) => {
       };
 
       // Add order to Firestore
-      const { addDoc, collection } = await import('firebase/firestore');
-      const { db } = await import('../firebase');
+      const { addOrder, updateItem } = await import('../utils/dataManager');
       
-      await addDoc(collection(db, 'orders'), order);
+      await addOrder(order);
       
       // Update local state
       const newOrder = { id: Date.now().toString(), ...order };
       setOrders(prev => [...prev, newOrder]);
       
       // Update item quantity
-      const { updateDoc, doc } = await import('firebase/firestore');
-      await updateDoc(doc(db, 'items', item.id), {
+      await updateItem(item.id, {
         quantity: item.quantity - 1
       });
       
