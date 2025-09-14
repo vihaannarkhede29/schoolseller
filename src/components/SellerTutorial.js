@@ -1,15 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronRight, ChevronLeft, Package, ShoppingCart, TrendingUp, DollarSign, CheckCircle, Clock } from 'lucide-react';
 
 const SellerTutorial = ({ isOpen, onClose, onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [highlightedElement, setHighlightedElement] = useState(null);
+  const [highlightStyle, setHighlightStyle] = useState({});
+  const highlightRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       setIsVisible(true);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isVisible && currentStepData.target) {
+      highlightTargetElement();
+    } else {
+      clearHighlight();
+    }
+  }, [currentStep, isVisible]);
+
+  const highlightTargetElement = () => {
+    const targetElement = document.getElementById(currentStepData.target);
+    if (targetElement) {
+      setHighlightedElement(targetElement);
+      
+      // Scroll element into view
+      targetElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'center'
+      });
+      
+      // Wait for scroll to complete, then highlight
+      setTimeout(() => {
+        const rect = targetElement.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        
+        setHighlightStyle({
+          position: 'absolute',
+          top: rect.top + scrollTop,
+          left: rect.left + scrollLeft,
+          width: rect.width,
+          height: rect.height,
+          zIndex: 45
+        });
+      }, 500);
+    }
+  };
+
+  const clearHighlight = () => {
+    setHighlightedElement(null);
+    setHighlightStyle({});
+  };
 
   const tutorialSteps = [
     {
@@ -97,6 +143,7 @@ const SellerTutorial = ({ isOpen, onClose, onComplete }) => {
   };
 
   const handleComplete = () => {
+    clearHighlight();
     setIsVisible(false);
     setTimeout(() => {
       onComplete();
@@ -120,6 +167,30 @@ const SellerTutorial = ({ isOpen, onClose, onComplete }) => {
     <>
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={handleSkip} />
+      
+      {/* Highlight Overlay */}
+      {highlightedElement && (
+        <>
+          {/* Dimmed background */}
+          <div className="fixed inset-0 bg-black bg-opacity-60 pointer-events-none z-45" />
+          
+          {/* Spotlight effect */}
+          <div
+            className="fixed pointer-events-none z-46"
+            style={{
+              top: highlightStyle.top - 10,
+              left: highlightStyle.left - 10,
+              width: highlightStyle.width + 20,
+              height: highlightStyle.height + 20,
+              background: 'transparent',
+              border: '3px solid #3b82f6',
+              borderRadius: '12px',
+              boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.5)',
+              animation: 'tutorial-pulse 2s infinite'
+            }}
+          />
+        </>
+      )}
       
       {/* Tutorial Tooltip */}
       <div className={`${getTooltipPosition()} max-w-md mx-4`}>
