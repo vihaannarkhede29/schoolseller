@@ -32,6 +32,7 @@ import {
 import ItemCard from './ItemCard';
 import OrderCard from './OrderCard';
 import SalesChart from './SalesChart';
+import SellerTutorial from './SellerTutorial';
 
 const SellerDashboard = ({ user }) => {
   const [items, setItems] = useState([]);
@@ -42,9 +43,16 @@ const SellerDashboard = ({ user }) => {
   const [shareUrl, setShareUrl] = useState('');
   const [timeFilter, setTimeFilter] = useState('week'); // day, week, month
   const [copied, setCopied] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     loadData();
+    
+    // Check if this is the first time the user is seeing the dashboard
+    const hasSeenTutorial = localStorage.getItem('sellerTutorialSeen');
+    if (!hasSeenTutorial) {
+      setShowTutorial(true);
+    }
   }, []);
 
   const loadData = async () => {
@@ -131,6 +139,15 @@ const SellerDashboard = ({ user }) => {
     }
   };
 
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    localStorage.setItem('sellerTutorialSeen', 'true');
+  };
+
+  const handleShowTutorial = () => {
+    setShowTutorial(true);
+  };
+
   const pendingOrders = orders.filter(order => order.status === 'pending');
   const confirmedOrders = orders.filter(order => order.status === 'confirmed');
 
@@ -146,14 +163,20 @@ const SellerDashboard = ({ user }) => {
                   <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center">
                     <TrendingUp className="h-7 w-7 text-white" />
                   </div>
-            <div>
+                  <div>
                     <h1 className="text-3xl font-bold text-gray-900">Seller Dashboard</h1>
                     <p className="text-gray-600 mt-1">Welcome back, {user.displayName || user.name}!</p>
                   </div>
+                  <button
+                    onClick={handleShowTutorial}
+                    className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                  >
+                    📚 Tutorial
+                  </button>
                 </div>
                 
                 {/* Stats Row */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div id="revenue-stats" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-green-50 rounded-lg p-4">
                     <div className="flex items-center">
                       <Users className="h-5 w-5 text-green-600" />
@@ -172,6 +195,7 @@ const SellerDashboard = ({ user }) => {
               {/* Action Buttons */}
               <div className="flex items-center space-x-3 mt-6 lg:mt-0">
                 <button
+                  id="share-button"
                   onClick={() => setShowShareModal(true)}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
@@ -179,6 +203,7 @@ const SellerDashboard = ({ user }) => {
                   Share Store
                 </button>
                 <Link
+                  id="add-item-button"
                   to="/add-item"
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
@@ -298,7 +323,7 @@ const SellerDashboard = ({ user }) => {
           </div>
 
           {/* Chart */}
-          <div className="h-80 bg-gray-50 rounded-lg p-6">
+          <div id="sales-chart" className="h-80 bg-gray-50 rounded-lg p-6">
             <SalesChart sellerId={user.uid || user.id} period={timeFilter} />
           </div>
         </div>
@@ -306,7 +331,7 @@ const SellerDashboard = ({ user }) => {
         {/* Quick Actions & Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Pending Orders Card */}
-          <div className="group bg-white/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in-up">
+          <div id="pending-orders-card" className="group bg-white/70 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-fade-in-up">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
                 <Clock className="h-6 w-6 text-white" />
@@ -477,6 +502,7 @@ const SellerDashboard = ({ user }) => {
                 </div>
               </div>
               <Link
+                id="orders-tab"
                 to="/orders"
                 className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-300 hover:scale-105 flex items-center space-x-2"
               >
@@ -623,6 +649,13 @@ const SellerDashboard = ({ user }) => {
             </div>
           </div>
         )}
+
+        {/* Tutorial */}
+        <SellerTutorial
+          isOpen={showTutorial}
+          onClose={() => setShowTutorial(false)}
+          onComplete={handleTutorialComplete}
+        />
       </div>
     </div>
   );
